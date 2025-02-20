@@ -39,6 +39,11 @@ body {
 }
 
 #map-app {
+  height: 100%;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+
   & > div {
     height: 100vh;
     width: 100%;
@@ -77,5 +82,17 @@ body {
         height: 100%;
       }
     }
+  }
+
+  section {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 50px;
   }
 }

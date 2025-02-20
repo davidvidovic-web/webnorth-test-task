@@ -14,7 +14,7 @@ class Map_Template
     {
         $this->map_app_path = plugin_dir_url(__FILE__);
         add_filter('template_include', [$this, 'load_template']);
-        add_action('wp_enqueue_scripts', [$this, 'conditionally_enqueue_scripts']); //ensure template is loaded first before enqueuing scripts
+        add_action('wp_enqueue_scripts', [$this, 'conditionally_enqueue_scripts']); // Ensure template is loaded first before enqueuing scripts
     }
 
     public function conditionally_enqueue_scripts()
@@ -49,7 +49,7 @@ class Map_Template
 
     public function render_template()
     {
-        // I used get_header so enqueues, SEO and other WP features can be used. For the simplicity of the setup I will hide this header and just use the logo from a file
+        // I used get_header so enqueues, SEO and other WP features can be used. For simplicity of the setup I will hide this header and just use the logo from a file
         get_header();
 ?>
 
@@ -61,12 +61,12 @@ class Map_Template
         <main id="main-content">
             <article id="post-<?php the_ID(); ?>" <?php post_class(); ?>>
                 <div id="map-app">
-                    <div id="hero">
+                    <div id="hero" data-color="#28272c">
                         <h1>WeatherWay</h1>
                         <span>Scroll</span>
                     </div>
                     <div id="map-container">
-                        <div class="map-sidebar" data="no-data">
+                        <div class="map-sidebar">
                             <div class="map-header">
                                 <a href="<?php echo get_bloginfo('url'); ?>">
                                     <img src="<?php echo $this->map_app_path; ?>/images/webnorth-logo.png" alt="Webnorth Logo">

@@ -1,44 +1,52 @@
-document.addEventListener("DOMContentLoaded", function () {
-  const mapApp = document.getElementById("map-app");
-  const mapContainer = document.getElementById("map-container");
-
-  // Ensure GSAP and ScrollTrigger are loaded
-  if (typeof gsap !== "undefined" && typeof ScrollTrigger !== "undefined") {
-    gsap.registerPlugin(ScrollTrigger);
-
-    ScrollTrigger.create({
-      trigger: mapContainer,
-      start: "top bottom",
-      end: "bottom top",
-      onEnter: () => {
-        gsap.to(mapApp, {
-          background:
-            "linear-gradient(to bottom, rgba(40, 39, 44, 1) 0%, rgba(40, 39, 44, 0) 100%)",
-          duration: 0.5,
-        });
-      },
-      onLeave: () => {
-        gsap.to(mapApp, {
-          background: "none",
-          duration: 0.5,
-        });
-      },
-      onLeaveBack: () => {
-        gsap.to(mapApp, {
-          background:
-            "linear-gradient(to bottom, rgba(40, 39, 44, 1) 100%, rgba(40, 39, 44, 0) 100%)",
-          duration: 0.5,
-        });
-      },
-      onEnterBack: () => {
-        gsap.to(mapApp, {
-          background:
-            "linear-gradient(to bottom, rgba(40, 39, 44, 1) 0%, rgba(40, 39, 44, 0) 100%)",
-          duration: 0.5,
-        });
-      },
-    });
-  } else {
-    console.error("GSAP or ScrollTrigger is not loaded.");
+class MapAnimation {
+  constructor() {
+    this.init();
   }
-});
+
+  init() {
+    document.addEventListener("DOMContentLoaded", () => {
+      gsap.registerPlugin(ScrollTrigger);
+      this.setupColoredSections();
+      this.setupSidebarAnimation();
+    });
+  }
+
+  setupColoredSections() {
+    let coloredSections = gsap.utils.toArray("[data-color]");
+    coloredSections.forEach((section, i) => {
+      let bgColor = section.getAttribute("data-color");
+      ScrollTrigger.create({
+        trigger: section,
+        start: "200 bottom",
+        end: "+=100%",
+        onToggle: self => {
+          if (self.isActive) {
+            gsap.to("body", {
+              backgroundColor: bgColor,
+              overwrite: "auto",
+            });
+          } else if ((i === 0 && self.direction < 0) || (i === coloredSections.length - 1 && self.direction > 0)) {
+            gsap.to("body", {
+              backgroundColor: "transparent",
+              overwrite: "auto"
+            });
+          }
+        }
+      });
+    });
+  }
+
+  setupSidebarAnimation() {
+    gsap.from(".map-sidebar", {
+      x: "-100%",
+      scrollTrigger: {
+        trigger: "#map-container",
+        start: "top bottom",
+        end: "top top",
+        scrub: true,
+      }
+    });
+  }
+}
+
+new MapAnimation();
