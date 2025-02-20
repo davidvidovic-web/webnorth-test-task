@@ -10,10 +10,12 @@ class Create_Map_Page
 {
     private $page_slug = 'map';
     private $page_title = 'Map';
+    private $page_template = 'webnorth-map-template';
 
     public function __construct()
     {
         add_filter('display_post_states', [$this, 'add_custom_post_state'], 10, 2);
+        add_filter('template_include', [$this, 'load_custom_template']);
     }
 
     public function create_page_on_activation()
@@ -36,6 +38,7 @@ class Create_Map_Page
 
         if ($page_id) {
             update_post_meta($page_id, '_custom_page_message', 'Map Page');
+            update_post_meta($page_id, '_wp_page_template', $this->page_template);
         }
     }
 
@@ -45,5 +48,16 @@ class Create_Map_Page
             $post_states[] = __('Map Page', 'webnorth-frontend-plugin');
         }
         return $post_states;
+    }
+
+    public function load_custom_template($template)
+    {
+        if (is_page() && get_page_template_slug() === $this->page_template) {
+            $plugin_template = plugin_dir_path(__FILE__) . '../Map/index.php';
+            if (file_exists($plugin_template)) {
+                return $plugin_template;
+            }
+        }
+        return $template;
     }
 }

@@ -1,0 +1,67 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap");
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  margin: 0 !important;
+  padding: 0;
+}
+
+body {
+  font-family: "Roboto", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+#header {
+  display: none;
+}
+#header + hr {
+  display: none;
+}
+
+#map-header {
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  z-index: 10;
+}
+
+#map-app > div {
+  height: 100vh;
+  width: 100%;
+}
+#map-app > div#hero {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  text-align: center;
+}
+#map-app > div#hero h1,
+#map-app > div#hero span {
+  color: #fff;
+}
+#map-app > div#hero span {
+  position: absolute;
+  bottom: 50px;
+}
+#map-app > div#map-container {
+  display: flex;
+}
+#map-app > div#map-container .map-sidebar {
+  width: 300px;
+  height: 100%;
+  background-color: #28272c;
+  color: #fff;
+}
+#map-app > div#map-container #map {
+  width: calc(100% - 300px);
+  height: 100%;
+}
+
+/*# sourceMappingURL=main.css.map */

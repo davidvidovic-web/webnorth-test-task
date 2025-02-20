@@ -1,0 +1,25 @@
+{
+  "name": "webnorth-test-task",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/davidvidovic-web/webnorth-test-task.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/davidvidovic-web/webnorth-test-task/issues"
+  },
+  "homepage": "https://github.com/davidvidovic-web/webnorth-test-task#readme",
+  "description": "",
+  "devDependencies": {
+    "sass": "^1.85.0",
+    "vite": "^6.1.1"
+  }
+}

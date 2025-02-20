@@ -52,4 +52,3 @@ class Weather_Station_ACF_Fields
         }
     }
 }
-

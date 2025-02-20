@@ -7,6 +7,7 @@
  * Author:      David Vidovic
  * Author URI:  https://davidvidovic.com
  * Text Domain: webnorth-frontend-plugin
+ * Requires Plugins: Advanced Custom Fields (ACF)
  */
 
 if (!defined('ABSPATH')) {
@@ -20,7 +21,12 @@ use Webnorth\Pages\Create_Map_Page;
 
 $weather_station_manager = Weather_Station_Manager::get_instance();
 
-//instace here so that the page is created on activation and avoids headers already sent error
+/*
+instace here so that the page is created on activation
+avoids headers already sent error
+updates the post meta for the page to include a custom message
+*/
+
 $create_map_page = new Create_Map_Page();
 
 register_activation_hook(__FILE__, [$weather_station_manager, 'check_acf_dependency']);
