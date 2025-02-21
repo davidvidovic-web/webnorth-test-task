@@ -3,11 +3,11 @@ import path from "path";
 
 export default defineConfig({
   build: {
-    outDir: "inc/Map/css",
+    outDir: "inc/Map/assets/css",
     emptyOutDir: false,
     rollupOptions: {
       input: {
-        main: path.resolve(__dirname, "inc/Map/scss/main.scss"),
+        main: path.resolve(__dirname, "inc/Map/assets/scss/main.scss"),
       },
       output: {
         entryFileNames: "style.css", 
