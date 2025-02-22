@@ -1,35 +1,47 @@
-document.addEventListener("DOMContentLoaded", function () {
-  // Initial map settings
-  const initialCenter = [55.6867243, 12.5700724];
-  const initialZoom = 10;
+class MapInitializer {
+  constructor() {
+    //initial map coordinates ( Copenahgen )
+    this.initialCenter = [55.6867243, 12.5700724];
+    this.initialZoom = 3;
+    this.map = null;
+  }
 
-  // Make settings globally available first
-  window.mapSettings = {
-    initialCenter,
-    initialZoom,
-  };
+  init() {
+    window.mapSettings = {
+      initialCenter: this.initialCenter,
+      initialZoom: this.initialZoom,
+    };
 
-  // Create map instance
-  var map = L.map("map").setView(initialCenter, initialZoom);
+    this.map = L.map("map").setView(this.initialCenter, this.initialZoom);
+    window.map = this.map;
 
-  // Make map instance available
-  window.map = map;
+    this.addTileLayer();
+    this.setupMapReadyHandler();
+  }
 
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-    attribution: "&copy; OpenStreetMap contributors",
-  }).addTo(map);
+  addTileLayer() {
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap contributors",
+    }).addTo(this.map);
+  }
 
-  // Handle initial map load and set final width
-  map.whenReady(() => {
-    map.invalidateSize({
-      animate: false,
-      pan: false,
+  setupMapReadyHandler() {
+    this.map.whenReady(() => {
+      this.map.invalidateSize({
+        animate: false,
+        pan: false,
+      });
+
+      this.map.setView(this.initialCenter, this.initialZoom, {
+        animate: false,
+      });
+
+      window.dispatchEvent(new Event("mapReady"));
     });
+  }
+}
 
-    map.setView(initialCenter, initialZoom, {
-      animate: false,
-    });
-
-    window.dispatchEvent(new Event("mapReady"));
-  });
+document.addEventListener("DOMContentLoaded", () => {
+  const mapInitializer = new MapInitializer();
+  mapInitializer.init();
 });

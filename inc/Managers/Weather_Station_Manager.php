@@ -5,7 +5,8 @@ namespace Webnorth\Managers;
 use Webnorth\PostTypes\Weather_Station_Post_Type;
 use Webnorth\ACFFields\Weather_Station_ACF_Fields;
 use Webnorth\Pages\Create_Map_Page;
-use Webnorth\Map\Map_Data_Handler;
+use Webnorth\Handlers\Admin_Map_Data_Handler;
+use Webnorth\Map\Admin_Map_Data_Handler as MapAdmin_Map_Data_Handler;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -63,7 +64,7 @@ class Weather_Station_Manager
     private function init_data_handler()
     {
         // Initialize the data handler
-        $this->data_handler = new Map_Data_Handler();
+        $this->data_handler = new Admin_Map_Data_Handler();
         
         // Add debug log to confirm initialization
         error_log('Map_Data_Handler initialized in Weather_Station_Manager');

@@ -1,25 +1,23 @@
 <?php
 
-namespace Webnorth\Map;
+namespace Webnorth\Handlers;
 
 if (!defined('ABSPATH')) {
     exit;
 }
 
-class Map_Data_Handler
+class Admin_Map_Data_Handler
 {
     private $api_base_url = 'https://nominatim.openstreetmap.org/search';
     private $location_priorities = [
         'city' => 1,
         'town' => 2,
-        'village' => 3
+        'village' => 3,
+        'multipolygon' => 4
     ];
 
     public function __construct()
     {
-        error_log('Map_Data_Handler constructor called');
-
-        // Add hooks with lower priority (higher number) to run after ACF
         add_action('acf/save_post', [$this, 'update_location_data'], 999);
         add_action('save_post_weather_station', [$this, 'update_location_data'], 999, 1);
         add_action('rest_after_insert_weather_station', [$this, 'update_location_data'], 999, 1);
@@ -27,71 +25,81 @@ class Map_Data_Handler
 
     public function update_location_data($post_id)
     {
-        error_log('Weather Station Save Triggered - Post ID: ' . $post_id);
+        if (is_object($post_id) && isset($post_id->ID)) {
+            $post_id = $post_id->ID;
+        }
 
-        // Prevent infinite loops
+        if ($this->should_skip_update($post_id)) {
+            return;
+        }
+
+        //prevent loops
         remove_action('save_post_weather_station', [$this, 'update_location_data'], 999);
         remove_action('rest_after_insert_weather_station', [$this, 'update_location_data'], 999);
 
-        // Log save type
-        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
-            error_log('Autosave detected - skipping location update');
+        $display_name = $this->get_display_name($post_id);
+        if (empty($display_name)) {
             return;
+        }
+
+        try {
+            $location_data = $this->get_location_data($display_name);
+            if (!$location_data) {
+                return;
+            }
+
+            $best_match = $this->get_best_match($location_data);
+            if (!$best_match) {
+                return;
+            }
+
+            $this->update_post_meta($post_id, $best_match);
+        } catch (\Exception $e) {
+        } finally {
+            add_action('save_post_weather_station', [$this, 'update_location_data'], 999, 1);
+            add_action('rest_after_insert_weather_station', [$this, 'update_location_data'], 999, 1);
+        }
+    }
+
+    private function should_skip_update($post_id)
+    {
+        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+            return true;
         }
 
         if (wp_is_post_revision($post_id)) {
-            error_log('Revision detected - skipping location update');
-            return;
+            return true;
         }
 
-        // Verify post type
         if (get_post_type($post_id) !== 'weather_station') {
-            error_log('Not a weather station post type - skipping location update');
-            return;
+            return true;
         }
 
-        // Try getting the title first if display_name is empty
+        return false;
+    }
+
+    private function get_display_name($post_id)
+    {
         $display_name = get_field('display_name', $post_id);
-        error_log('Display name from ACF: ' . ($display_name ? $display_name : 'not found'));
 
         if (empty($display_name)) {
             $display_name = get_the_title($post_id);
-            error_log('Display name from title: ' . ($display_name ? $display_name : 'not found'));
         }
 
-        if (empty($display_name)) {
-            $display_name = get_post_meta($post_id, 'display_name', true);
-            error_log('Display name from post meta: ' . ($display_name ? $display_name : 'not found'));
-        }
+        return $display_name;
+    }
 
-        if (empty($display_name)) {
-            error_log('No display name found - skipping location update');
-            return;
-        }
-
-        // Get location data from Nominatim
-        $location_data = $this->get_location_data($display_name);
-        if (!$location_data) {
-            return;
-        }
-
-        // Save the best match to post meta
-        $best_match = $this->get_best_match($location_data);
-        if ($best_match) {
-            update_post_meta($post_id, 'lat', $best_match['lat']);
-            update_post_meta($post_id, 'lon', $best_match['lon']);
-            update_post_meta($post_id, 'display_name', $best_match['display_name']);
-        }
-
-        // Re-add actions with correct priority
-        add_action('save_post_weather_station', [$this, 'update_location_data'], 999, 1);
-        add_action('rest_after_insert_weather_station', [$this, 'update_location_data'], 999, 1);
+    private function update_post_meta($post_id, $location_data)
+    {
+        update_post_meta($post_id, 'lat', $location_data['lat']);
+        update_post_meta($post_id, 'lon', $location_data['lon']);
+        update_post_meta($post_id, 'display_name', $location_data['display_name']);
     }
 
     private function get_location_data($query)
     {
-        // Add delay to respect Nominatim usage policy
-        usleep(1000000); // 1 second delay
+        //avoid rate limiting 
+        usleep(1000000);
 
         $args = [
             'timeout' => 15,
@@ -109,7 +117,6 @@ class Map_Data_Handler
         $response = wp_remote_get($url, $args);
 
         if (is_wp_error($response)) {
-            error_log('Nominatim API Error: ' . $response->get_error_message());
             return false;
         }
 
@@ -117,7 +124,6 @@ class Map_Data_Handler
         $data = json_decode($body, true);
 
         if (empty($data)) {
-            error_log('No location data found for: ' . $query);
             return false;
         }
 
@@ -130,7 +136,6 @@ class Map_Data_Handler
             return null;
         }
 
-        // Sort locations by type priority
         usort($locations, function ($a, $b) {
             $a_priority = $this->get_location_priority($a);
             $b_priority = $this->get_location_priority($b);
@@ -138,7 +143,6 @@ class Map_Data_Handler
             return $a_priority - $b_priority;
         });
 
-        // Return the first (highest priority) location
         return [
             'lat' => $locations[0]['lat'],
             'lon' => $locations[0]['lon'],
@@ -149,7 +153,7 @@ class Map_Data_Handler
     private function get_location_priority($location)
     {
         if (empty($location['type'] || !in_array($location['type'], array_keys($this->location_priorities)))) {
-            return 999; // Lowest priority for unknown types
+            return 999;
         }
 
         return isset($this->location_priorities[$location['type']])

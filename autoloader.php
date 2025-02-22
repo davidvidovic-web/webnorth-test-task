@@ -30,7 +30,15 @@ class Autoloader
         }
 
         $relative_class = substr($class, $len);
-        $file = $base_dir . str_replace('\\', '/', $relative_class) . '.php';
+        
+        $file_name = preg_replace(
+            ['/([a-z])([A-Z])/', '/_/'],
+            ['$1-$2', '-'],
+            $relative_class
+        );
+        $file_name = strtolower($file_name);
+        
+        $file = $base_dir . str_replace('\\', '/', $file_name) . '.php';
 
         if (file_exists($file)) {
             require $file;
