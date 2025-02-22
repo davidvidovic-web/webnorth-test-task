@@ -7,31 +7,40 @@ class MapAnimation {
     document.addEventListener("DOMContentLoaded", () => {
       gsap.registerPlugin(ScrollTrigger);
       this.setupAnimations();
+
+      window.addEventListener("mapReady", () => {
+        this.handleMapResize();
+      });
     });
   }
 
+  //for smooth and centered map resizing
   handleMapResize() {
     const map = window.map;
-    const { initialCenter, initialZoom } = window.mapSettings;
 
-    if (map) {
-      console.log("Resizing map");
-      map.invalidateSize({
-        animate: false,
-        pan: false,
-      });
+    if (map && window.mapSettings) {
+      const { initialCenter, initialZoom } = window.mapSettings;
+      const mapContainer = map.getContainer();
 
-      map.setView(initialCenter, initialZoom, {
-        animate: true,
-        duration: 0.3,
-        pan: {
+      mapContainer.style.width = "calc(100% - 300px)";
+
+      // Force a repaint before invalidating size
+      void mapContainer.offsetHeight;
+      requestAnimationFrame(() => {
+        map.invalidateSize({
+          animate: false,
+          pan: false,
+        });
+
+        map.setView(initialCenter, initialZoom, {
           animate: true,
           duration: 0.3,
-          easeLinearity: 0.5,
-        },
-        zoom: {
-          animate: true,
-        },
+          pan: {
+            animate: true,
+            duration: 0.3,
+            easeLinearity: 0.5,
+          },
+        });
       });
     }
   }
@@ -67,6 +76,9 @@ class MapAnimation {
         start: "top bottom",
         end: "top top",
         scrub: 1,
+        onUpdate: () => {
+          this.handleMapResize();
+        },
       },
     });
 
@@ -76,10 +88,8 @@ class MapAnimation {
     }).to(
       map,
       {
-        width: "calc(100% - 300px)",
         x: "300px",
-
-        //resize map when sidebar is opened
+        ease: "none",
         onComplete: () => {
           this.handleMapResize();
         },

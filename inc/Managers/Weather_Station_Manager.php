@@ -5,6 +5,7 @@ namespace Webnorth\Managers;
 use Webnorth\PostTypes\Weather_Station_Post_Type;
 use Webnorth\ACFFields\Weather_Station_ACF_Fields;
 use Webnorth\Pages\Create_Map_Page;
+use Webnorth\Map\Map_Data_Handler;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -13,6 +14,7 @@ if (!defined('ABSPATH')) {
 class Weather_Station_Manager
 {
     private static $instance = null;
+    private $data_handler;
 
     public static function get_instance()
     {
@@ -25,7 +27,9 @@ class Weather_Station_Manager
     private function __construct()
     {
         add_action('init', [$this, 'register_custom_post_type']);
-        add_action('acf/init', [$this, 'register_acf_fields']);
+        $this->check_acf_dependency();
+        $this->register_acf_fields();
+        $this->init_data_handler();
     }
 
     public function check_acf_dependency()
@@ -54,6 +58,20 @@ class Weather_Station_Manager
     {
         $create_map_page = new Create_Map_Page();
         $create_map_page->create_page_on_activation();
+    }
+
+    private function init_data_handler()
+    {
+        // Initialize the data handler
+        $this->data_handler = new Map_Data_Handler();
+        
+        // Add debug log to confirm initialization
+        error_log('Map_Data_Handler initialized in Weather_Station_Manager');
+    }
+
+    public function get_data_handler()
+    {
+        return $this->data_handler;
     }
 }
 
