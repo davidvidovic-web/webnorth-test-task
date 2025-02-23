@@ -6,7 +6,6 @@ use Webnorth\PostTypes\Weather_Station_Post_Type;
 use Webnorth\ACF\Weather_Station_ACF_Fields;
 use Webnorth\Pages\Create_Map_Page;
 use Webnorth\Handlers\Admin_Map_Data_Handler;
-use Webnorth\Handlers\Client_Map_Data_Handler;
 
 if (!defined('ABSPATH')) {
     exit;

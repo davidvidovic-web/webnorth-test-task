@@ -2,6 +2,7 @@ class MapAnimation {
   constructor() {
     this.init();
     this.setupSidebarTransitions();
+    this.setupCustomCursor();
   }
 
   init() {
@@ -121,6 +122,39 @@ class MapAnimation {
       observer.observe(mapFooter, {
         attributes: true,
         attributeFilter: ["class"],
+      });
+    });
+  }
+
+  setupCustomCursor() {
+    document.addEventListener("DOMContentLoaded", () => {
+      const cursor = document.createElement("div");
+      cursor.className = "custom-cursor";
+      document.body.appendChild(cursor);
+
+      document.addEventListener("mousemove", (e) => {
+        cursor.style.left = e.clientX + "px";
+        cursor.style.top = e.clientY + "px";
+
+        if (!cursor.classList.contains("visible")) {
+          cursor.classList.add("visible");
+        }
+      });
+
+      document.addEventListener("mousedown", () => {
+        cursor.classList.add("clicking");
+      });
+
+      document.addEventListener("mouseup", () => {
+        cursor.classList.remove("clicking");
+      });
+
+      document.addEventListener("mouseleave", () => {
+        cursor.classList.remove("visible");
+      });
+
+      document.addEventListener("mouseenter", () => {
+        cursor.classList.add("visible");
       });
     });
   }
