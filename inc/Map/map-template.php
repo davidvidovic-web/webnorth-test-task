@@ -19,7 +19,7 @@ class Map_Template
         $this->station_service = new Weather_Station_Post_Data();
 
         add_filter('template_include', [$this, 'load_template']);
-        add_action('wp_enqueue_scripts', [$this, 'conditionally_enqueue_scripts']); // Ensure template is loaded first before enqueuing scripts
+        add_action('wp_enqueue_scripts', [$this, 'conditionally_enqueue_scripts']); // ensure template is loaded first before enqueuing scripts
     }
 
     public function conditionally_enqueue_scripts()
@@ -31,15 +31,12 @@ class Map_Template
 
     public function enqueue_map_scripts()
     {
-        // The core GSAP library and ScrollTrigger plugin
         wp_enqueue_script('gsap-js', $this->map_app_path . 'assets/js/gsap.min.js', array(), false, false);
         wp_enqueue_script('gsap-st', $this->map_app_path . 'assets/js/ScrollTrigger.min.js', array('gsap-js'), false, false);
-        // The main JS files for the map app and the Leaflet library
-        wp_register_script('webnorth-main-js', $this->map_app_path . 'assets/js/main.js', ['gsap-js', 'gsap-st'], null, false);
+        wp_register_script('webnorth-main-js', $this->map_app_path . 'assets/js/main.min.js', ['gsap-js', 'gsap-st'], null, false);
         wp_register_script('leaflet-js', $this->map_app_path . 'assets/js/leaflet.min.js', ['webnorth-main-js'], false, false);
-        wp_register_script('webnorth-map-js', $this->map_app_path . 'assets/js/map.js', ['leaflet-js'], false, false);
+        wp_register_script('webnorth-map-js', $this->map_app_path . 'assets/js/map.min.js', ['leaflet-js'], false, false);
 
-        // The main CSS file for the map app and the Leaflet library
         wp_register_style('webnorth-main-css', $this->map_app_path . 'assets/css/mapStyles.css', [], null);
         wp_register_style('leaflet-css', $this->map_app_path . 'assets/css/leaflet.css', [], null);
 
@@ -48,6 +45,7 @@ class Map_Template
         wp_enqueue_script('webnorth-main-js');
         wp_enqueue_script('leaflet-js');
         wp_enqueue_script('webnorth-map-js');
+        
         wp_enqueue_style('webnorth-main-css');
         wp_enqueue_style('leaflet-css');
 
