@@ -89,7 +89,6 @@ body {
 #map-app > div#map-container .map-sidebar .map-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
 }
 #map-app > div#map-container .map-sidebar .map-header .webnorth-sidebar-logo {
   display: block;
@@ -105,8 +104,24 @@ body {
 #map-app > div#map-container .map-sidebar .map-header .bookmark-icon.visible {
   display: block;
 }
+#map-app > div#map-container .map-sidebar .map-header .bookmark-icon {
+  display: none;
+  cursor: pointer;
+}
+#map-app > div#map-container .map-sidebar .map-header .bookmark-icon.visible {
+  display: block;
+}
+#map-app > div#map-container .map-sidebar .map-header .bookmark-icon .bookmark {
+  display: block;
+}
 #map-app > div#map-container .map-sidebar .map-header .bookmark-icon .bookmarked {
   display: none;
+}
+#map-app > div#map-container .map-sidebar .map-header .bookmark-icon.active .bookmark {
+  display: none;
+}
+#map-app > div#map-container .map-sidebar .map-header .bookmark-icon.active .bookmarked {
+  display: block;
 }
 #map-app > div#map-container .map-sidebar .map-content {
   margin-top: 50px;
@@ -143,9 +158,6 @@ body {
 #map-app > div#map-container .map-sidebar .bookmarked-stations {
   display: none;
 }
-#map-app > div#map-container .map-sidebar .bookmarked-stations .station-accordion {
-  border-bottom: 1px solid #eee;
-}
 #map-app > div#map-container .map-sidebar .bookmarked-stations .station-accordion .station-header {
   display: flex;
   justify-content: space-between;
@@ -163,7 +175,6 @@ body {
 }
 #map-app > div#map-container .map-sidebar .bookmarked-stations .station-accordion .station-content {
   padding: 15px;
-  background: #f9f9f9;
 }
 #map-app > div#map-container .map-sidebar .map-footer {
   position: absolute;

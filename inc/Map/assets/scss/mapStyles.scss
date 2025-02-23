@@ -101,7 +101,6 @@ body {
         .map-header {
           display: flex;
           justify-content: space-between;
-          align-items: center;
 
           .webnorth-sidebar-logo {
             display: block;
@@ -121,8 +120,29 @@ body {
           }
 
           .bookmark-icon {
+            display: none;
+            cursor: pointer;
+
+            &.visible {
+              display: block;
+            }
+
+            .bookmark {
+              display: block;
+            }
+
             .bookmarked {
               display: none;
+            }
+
+            &.active {
+              .bookmark {
+                display: none;
+              }
+
+              .bookmarked {
+                display: block;
+              }
             }
           }
         }
@@ -179,8 +199,6 @@ body {
           display: none;
 
           .station-accordion {
-            border-bottom: 1px solid #eee;
-
             .station-header {
               display: flex;
               justify-content: space-between;
@@ -201,7 +219,6 @@ body {
 
             .station-content {
               padding: 15px;
-              background: #f9f9f9;
             }
           }
         }

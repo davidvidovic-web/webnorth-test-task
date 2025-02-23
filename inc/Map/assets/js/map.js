@@ -11,6 +11,7 @@ class MapInitializer {
     this.markers = new Map();
     this.activeStation = null;
     this.userInitiated = false;
+    this.currentUnit = "metric"; // Default to Celsius
 
     // image path for markers, check if data exists first otherwise returns undefined
     if (typeof weatherStationData !== "undefined") {
@@ -24,6 +25,7 @@ class MapInitializer {
 
     this.bookmarkedStations = this.loadBookmarkedStations();
     this.setupMyLocationsHandler();
+    this.setupBookmarkHandler();
   }
 
   init() {
@@ -279,9 +281,59 @@ class MapInitializer {
     logo.classList.add("hidden");
     unitsSwitcher.classList.add("visible");
     bookmarkIcon.classList.add("visible");
+
+    // Add unit switching handlers
+    const celsiusOption = unitsSwitcher.querySelector(".unit-celsius");
+    const fahrenheitOption = unitsSwitcher.querySelector(".unit-fahrenheit");
+
+    celsiusOption?.addEventListener("click", () => {
+      if (this.currentUnit === "metric") return; // Already active
+
+      this.currentUnit = "metric";
+      celsiusOption.classList.add("active");
+      fahrenheitOption?.classList.remove("active");
+
+      // Update weather display if we have an active station
+      if (this.activeStation) {
+        const station = window.weatherStationData?.stations?.find(
+          (s) => s.id === this.activeStation
+        );
+        if (station?.weather_data) {
+          const weatherData = JSON.parse(station.weather_data);
+          this.updateWeatherContent(station, weatherData, "metric");
+        }
+      }
+    });
+
+    fahrenheitOption?.addEventListener("click", () => {
+      if (this.currentUnit === "imperial") return; // Already active
+
+      this.currentUnit = "imperial";
+      fahrenheitOption.classList.add("active");
+      celsiusOption?.classList.remove("active");
+
+      // Update weather display if we have an active station
+      if (this.activeStation) {
+        const station = window.weatherStationData?.stations?.find(
+          (s) => s.id === this.activeStation
+        );
+        if (station?.weather_data) {
+          const weatherData = JSON.parse(station.weather_data);
+          this.updateWeatherContent(station, weatherData, "imperial");
+        }
+      }
+    });
+
+    // Update bookmark icon state
+    if (bookmarkIcon) {
+      const isBookmarked = this.bookmarkedStations.some(
+        (s) => s.id === station.id
+      );
+      bookmarkIcon.classList.toggle("active", isBookmarked);
+    }
   }
 
-  updateWeatherContent(station, weatherData, unit = "metric") {
+  updateWeatherContent(station, weatherData, unit = null) {
     const mapContent = document.querySelector(".map-content");
     if (!mapContent) return;
 
@@ -291,8 +343,10 @@ class MapInitializer {
       defaultMessage.remove();
     }
 
-    const unitSymbol = unit === "metric" ? "°C" : "°F";
-    const temps = weatherData[unit];
+    // Use passed unit or fall back to current unit
+    const displayUnit = unit || this.currentUnit;
+    const unitSymbol = displayUnit === "metric" ? "°C" : "°F";
+    const temps = weatherData[displayUnit];
 
     // Create or update weather content
     let weatherContent = mapContent.querySelector(".weather-content");
@@ -332,7 +386,23 @@ class MapInitializer {
     } else {
       myLocationsLink.textContent = "My locations";
       mapSidebar.classList.remove("showing-bookmarks");
-      this.showActiveStation();
+
+      // Get the active station from weatherStationData
+      if (this.activeStation) {
+        const station = window.weatherStationData?.stations?.find(
+          (s) => s.id === this.activeStation
+        );
+
+        if (station?.weather_data) {
+          try {
+            const weatherData = JSON.parse(station.weather_data);
+            this.updateMapHeader(station);
+            this.updateWeatherContent(station, weatherData, this.currentUnit);
+          } catch (e) {
+            console.error("Error parsing weather data:", e);
+          }
+        }
+      }
     }
   }
 
@@ -348,7 +418,6 @@ class MapInitializer {
           <div class="station-accordion" data-station-id="${station.id}">
             <div class="station-header" data-index="${index}">
               <h3>${station.title}</h3>
-              <span class="toggle-icon">▼</span>
             </div>
             <div class="station-content" style="display: none;">
               ${this.formatWeatherData(station)}
@@ -365,7 +434,6 @@ class MapInitializer {
     accordions.forEach((accordion) => {
       const header = accordion.querySelector(".station-header");
       const content = accordion.querySelector(".station-content");
-      const icon = header.querySelector(".toggle-icon");
       const stationId = parseInt(accordion.dataset.stationId);
 
       header.addEventListener("click", () => {
@@ -386,13 +454,11 @@ class MapInitializer {
           accordions.forEach((acc) => {
             if (acc !== accordion) {
               acc.querySelector(".station-content").style.display = "none";
-              acc.querySelector(".toggle-icon").textContent = "▼";
             }
           });
 
           // Toggle clicked accordion
           content.style.display = isOpen ? "none" : "block";
-          icon.textContent = isOpen ? "▼" : "▲";
 
           // Only switch to single view if closing the accordion
           if (isOpen) {
@@ -420,6 +486,49 @@ class MapInitializer {
     myLocationsLink.addEventListener("click", (e) => {
       e.preventDefault();
       this.toggleMyLocations();
+    });
+  }
+
+  setupBookmarkHandler() {
+    const bookmarkIcon = document.querySelector(".bookmark-icon");
+    if (!bookmarkIcon) return;
+
+    bookmarkIcon.addEventListener("click", () => {
+      if (!this.activeStation) return;
+
+      const station = window.weatherStationData?.stations?.find(
+        (s) => s.id === this.activeStation
+      );
+
+      if (!station) return;
+
+      const isBookmarked = this.bookmarkedStations.some(
+        (s) => s.id === station.id
+      );
+
+      if (isBookmarked) {
+        // Remove from bookmarks
+        this.bookmarkedStations = this.bookmarkedStations.filter(
+          (s) => s.id !== station.id
+        );
+        bookmarkIcon.classList.remove("active");
+      } else {
+        // Add to bookmarks
+        this.bookmarkedStations.push({
+          id: station.id,
+          title: station.title,
+          lat: station.lat,
+          lon: station.lon,
+          weather_data: station.weather_data,
+        });
+        bookmarkIcon.classList.add("active");
+      }
+
+      // Save to localStorage
+      localStorage.setItem(
+        "bookmarkedStations",
+        JSON.stringify(this.bookmarkedStations)
+      );
     });
   }
 
