@@ -1,0 +1,203 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap");
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  margin: 0 !important;
+  padding: 0;
+}
+
+body {
+  font-family: "Roboto", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+#header {
+  display: none;
+}
+#header + hr {
+  display: none;
+}
+
+#map-header {
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  z-index: 10;
+}
+
+#map-app {
+  height: 100%;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+#map-app .gradient-overlay {
+  position: absolute;
+  top: 0%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  background: linear-gradient(rgb(40, 39, 44) 100%, rgba(40, 39, 44, 0) 0%);
+  pointer-events: none;
+}
+#map-app > div {
+  height: 100vh;
+  width: 100%;
+}
+#map-app > div#hero {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  text-align: center;
+  position: relative;
+  z-index: 4;
+  opacity: 1;
+}
+#map-app > div#hero h1,
+#map-app > div#hero span {
+  color: #fff;
+}
+#map-app > div#hero span {
+  position: absolute;
+  bottom: 50px;
+}
+#map-app > div#map-container {
+  display: flex;
+  position: relative;
+  opacity: 1;
+  overflow: hidden;
+}
+#map-app > div#map-container .map-sidebar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 300px;
+  height: 100%;
+  background-color: #28272c;
+  color: #fff;
+  z-index: 9;
+  padding: 30px;
+}
+#map-app > div#map-container .map-sidebar .map-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+#map-app > div#map-container .map-sidebar .map-header .webnorth-sidebar-logo {
+  display: block;
+}
+#map-app > div#map-container .map-sidebar .map-header .webnorth-sidebar-logo.hidden {
+  display: none;
+}
+#map-app > div#map-container .map-sidebar .map-header .units-switcher,
+#map-app > div#map-container .map-sidebar .map-header .bookmark-icon {
+  display: none;
+}
+#map-app > div#map-container .map-sidebar .map-header .units-switcher.visible,
+#map-app > div#map-container .map-sidebar .map-header .bookmark-icon.visible {
+  display: block;
+}
+#map-app > div#map-container .map-sidebar .map-header .bookmark-icon .bookmarked {
+  display: none;
+}
+#map-app > div#map-container .map-sidebar .map-content {
+  margin-top: 50px;
+}
+#map-app > div#map-container .map-sidebar .map-content .default-message {
+  font-size: 12px;
+  font-weight: 600;
+}
+#map-app > div#map-container .map-sidebar .map-content .weather-content {
+  display: block;
+}
+#map-app > div#map-container .map-sidebar .map-content .weather-content .station-title {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+#map-app > div#map-container .map-sidebar .map-content .weather-content .weather-info p {
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+#map-app > div#map-container .map-sidebar .map-content.showing-bookmarks .weather-content {
+  display: none;
+}
+#map-app > div#map-container .map-sidebar .map-content.showing-bookmarks .bookmarked-stations {
+  display: block;
+}
+#map-app > div#map-container .map-sidebar .map-content .weather-content .station-title {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+#map-app > div#map-container .map-sidebar .map-content .weather-content .weather-info p {
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+#map-app > div#map-container .map-sidebar .bookmarked-stations {
+  display: none;
+}
+#map-app > div#map-container .map-sidebar .bookmarked-stations .station-accordion {
+  border-bottom: 1px solid #eee;
+}
+#map-app > div#map-container .map-sidebar .bookmarked-stations .station-accordion .station-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  cursor: pointer;
+}
+#map-app > div#map-container .map-sidebar .bookmarked-stations .station-accordion .station-header h3 {
+  margin: 0;
+  font-size: 16px;
+}
+#map-app > div#map-container .map-sidebar .bookmarked-stations .station-accordion .station-header .toggle-icon {
+  font-size: 12px;
+  transition: transform 0.3s ease;
+}
+#map-app > div#map-container .map-sidebar .bookmarked-stations .station-accordion .station-content {
+  padding: 15px;
+  background: #f9f9f9;
+}
+#map-app > div#map-container .map-sidebar .map-footer {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+}
+#map-app > div#map-container .map-sidebar .map-footer a {
+  font-size: 12px;
+  text-decoration: none;
+  cursor: pointer;
+  color: inherit;
+}
+#map-app > div#map-container .map-sidebar .map-footer a:hover {
+  text-decoration: underline;
+}
+#map-app > div#map-container .map-sidebar.showing-bookmarks .map-header .webnorth-sidebar-logo {
+  display: none;
+}
+#map-app > div#map-container .map-sidebar.showing-bookmarks .map-header .units-switcher,
+#map-app > div#map-container .map-sidebar.showing-bookmarks .map-header .bookmark-icon {
+  display: block;
+}
+#map-app > div#map-container .map-sidebar.showing-bookmarks .weather-content {
+  display: none;
+}
+#map-app > div#map-container .map-sidebar.showing-bookmarks .bookmarked-stations {
+  display: block;
+}
+#map-app > div#map-container #map {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: width 0.3s ease;
+  z-index: 1;
+}
+
+/*# sourceMappingURL=mapStyles.css.map */

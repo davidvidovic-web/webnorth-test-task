@@ -2,6 +2,8 @@
 
 namespace Webnorth\Map;
 
+use Webnorth\Map\Services\Weather_Station_Post_Data;
+
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -9,10 +11,13 @@ if (!defined('ABSPATH')) {
 class Map_Template
 {
     private $map_app_path;
+    private $station_service;
 
     public function __construct()
     {
         $this->map_app_path = plugin_dir_url(__FILE__);
+        $this->station_service = new Weather_Station_Post_Data();
+
         add_filter('template_include', [$this, 'load_template']);
         add_action('wp_enqueue_scripts', [$this, 'conditionally_enqueue_scripts']); // Ensure template is loaded first before enqueuing scripts
     }
@@ -35,7 +40,7 @@ class Map_Template
         wp_register_script('webnorth-map-js', $this->map_app_path . 'assets/js/map.js', ['leaflet-js'], false, false);
 
         // The main CSS file for the map app and the Leaflet library
-        wp_register_style('webnorth-main-css', $this->map_app_path . 'assets/css/main.css', [], null);
+        wp_register_style('webnorth-main-css', $this->map_app_path . 'assets/css/mapStyles.css', [], null);
         wp_register_style('leaflet-css', $this->map_app_path . 'assets/css/leaflet.css', [], null);
 
         wp_enqueue_script('gsap');
@@ -45,6 +50,16 @@ class Map_Template
         wp_enqueue_script('webnorth-map-js');
         wp_enqueue_style('webnorth-main-css');
         wp_enqueue_style('leaflet-css');
+
+        $station_service = new Weather_Station_Post_Data();
+        $stations = $station_service->get_all_stations();
+
+        wp_localize_script('webnorth-map-js', 'weatherStationData', [
+            'stations' => $stations,
+            'map_app_path' => $this->map_app_path,
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'nonce' => wp_create_nonce('weather_data_nonce')
+        ]);
     }
 
     public function load_template($template)
@@ -77,12 +92,22 @@ class Map_Template
                     <div id="map-container">
                         <div class="map-sidebar">
                             <div class="map-header">
-                                <a href="<?php echo get_bloginfo('url'); ?>">
+                                <a class="webnorth-sidebar-logo" href="<?php echo get_bloginfo('url'); ?>">
                                     <img src="<?php echo $this->map_app_path; ?>/assets/images/webnorth-logo.png" alt="Webnorth Logo">
                                 </a>
+                                <div class="units-switcher">
+                                    <span class="unit-option unit-celsius active">Celsius</span>
+                                    <span>/</span>
+                                    <span class="unit-option unit-fahrenheit">Fahrenheit</span>
+                                </div>
+                                <div class="bookmark-icon">
+                                    <img class="bookmark" src="<?php echo $this->map_app_path; ?>/assets/images/bookmark.png" alt="Bookmark icon" />
+                                    <img class="bookmarked" src="<?php echo $this->map_app_path; ?>/assets/images/bookmarked.png" alt="Bookmarked icon" />
+                                </div>
                             </div>
                             <div class="map-content">
-                                <b>Click on the map to get weather data</b>
+                                <b class="default-message">Click on the map to get weather data</b>
+                                <div class="weather-content"></div>
                             </div>
                             <div class="map-footer">
                                 <a href="#">My locations</a>

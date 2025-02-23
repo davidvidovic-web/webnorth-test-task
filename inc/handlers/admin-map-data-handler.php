@@ -8,13 +8,7 @@ if (!defined('ABSPATH')) {
 
 class Admin_Map_Data_Handler
 {
-    private $api_base_url = 'https://nominatim.openstreetmap.org/search';
-    private $location_priorities = [
-        'city' => 1,
-        'town' => 2,
-        'village' => 3,
-        'multipolygon' => 4
-    ];
+    private $api_base_url = 'https://api.openweathermap.org/geo/1.0/direct';
 
     public function __construct()
     {
@@ -43,19 +37,15 @@ class Admin_Map_Data_Handler
         }
 
         try {
-            $location_data = $this->get_location_data($display_name);
+            $location_data = $this->get_location_data($display_name, $post_id);
             if (!$location_data) {
                 return;
             }
 
-            $best_match = $this->get_best_match($location_data);
-            if (!$best_match) {
-                return;
-            }
-
-            $this->update_post_meta($post_id, $best_match);
+            $this->update_post_meta($post_id, $location_data);
         } catch (\Exception $e) {
         } finally {
+            //add actions back
             add_action('save_post_weather_station', [$this, 'update_location_data'], 999, 1);
             add_action('rest_after_insert_weather_station', [$this, 'update_location_data'], 999, 1);
         }
@@ -91,27 +81,38 @@ class Admin_Map_Data_Handler
 
     private function update_post_meta($post_id, $location_data)
     {
+        // update if we don't have coordinates
+        if ($this->has_coordinates($post_id)) {
+            return;
+        }
+
         update_post_meta($post_id, 'lat', $location_data['lat']);
         update_post_meta($post_id, 'lon', $location_data['lon']);
         update_post_meta($post_id, 'display_name', $location_data['display_name']);
     }
 
-    private function get_location_data($query)
+    private function get_location_data($query, $post_id)
     {
-        //avoid rate limiting 
-        usleep(1000000);
+        if ($this->has_coordinates($post_id)) {
+            return false;
+        }
+
+        $api_key = get_option('webnorth_openweather_api_key');
+        if (empty($api_key)) {
+            return false;
+        }
 
         $args = [
-            'timeout' => 15,
+            'timeout' => 15, //ratelimiting
             'headers' => [
-                'User-Agent' => 'WordPress/' . get_bloginfo('version'),
-                'Referer' => get_site_url()
+                'User-Agent' => 'WordPress/' . get_bloginfo('version')
             ]
         ];
 
         $url = add_query_arg([
-            'format' => 'json',
-            'q' => urlencode($query)
+            'q' => urlencode($query),
+            'limit' => 5,
+            'appid' => $api_key
         ], $this->api_base_url);
 
         $response = wp_remote_get($url, $args);
@@ -127,37 +128,29 @@ class Admin_Map_Data_Handler
             return false;
         }
 
-        return $data;
-    }
+        $location = reset($data);
 
-    private function get_best_match($locations)
-    {
-        if (empty($locations)) {
-            return null;
+        if (!$location) {
+            return false;
         }
 
-        usort($locations, function ($a, $b) {
-            $a_priority = $this->get_location_priority($a);
-            $b_priority = $this->get_location_priority($b);
-
-            return $a_priority - $b_priority;
-        });
-
         return [
-            'lat' => $locations[0]['lat'],
-            'lon' => $locations[0]['lon'],
-            'display_name' => $locations[0]['display_name']
+            'lat' => $location['lat'],
+            'lon' => $location['lon'],
+            'display_name' => sprintf(
+                '%s%s, %s',
+                $location['name'],
+                !empty($location['state']) ? ', ' . $location['state'] : '',
+                $location['country']
+            )
         ];
     }
 
-    private function get_location_priority($location)
+    private function has_coordinates($post_id)
     {
-        if (empty($location['type'] || !in_array($location['type'], array_keys($this->location_priorities)))) {
-            return 999;
-        }
+        $lat = get_post_meta($post_id, 'lat', true);
+        $lon = get_post_meta($post_id, 'lon', true);
 
-        return isset($this->location_priorities[$location['type']])
-            ? $this->location_priorities[$location['type']]
-            : 999;
+        return !empty($lat) && !empty($lon);
     }
 }

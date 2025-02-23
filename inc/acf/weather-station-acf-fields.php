@@ -1,6 +1,6 @@
 <?php
 
-namespace Webnorth\ACFFields;
+namespace Webnorth\ACF;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -94,7 +94,7 @@ class Weather_Station_ACF_Fields
                     'label' => 'Weather data',
                     'name' => 'weather_data',
                     'aria-label' => '',
-                    'type' => 'text',
+                    'type' => 'textarea',
                     'instructions' => '',
                     'required' => 0,
                     'conditional_logic' => 0,

@@ -1,0 +1,258 @@
+// Import Roboto font from Google Fonts
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap");
+
+$main-color: #28272c;
+$text-primary: #fff;
+
+// resets
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  margin: 0 !important;
+  padding: 0;
+}
+
+body {
+  font-family: "Roboto", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+//hide default WP header and horizontal line
+#header {
+  display: none;
+
+  & + hr {
+    display: none;
+  }
+}
+
+#map-header {
+  position: absolute;
+  top: 30px;
+  left: 30px;
+  z-index: 10;
+}
+
+#map-app {
+  height: 100%;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+
+  .gradient-overlay {
+    position: absolute;
+    top: 0%;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 3;
+    background: linear-gradient(rgb(40, 39, 44) 100%, rgba(40, 39, 44, 0) 0%);
+    pointer-events: none;
+  }
+
+  & > div {
+    height: 100vh;
+    width: 100%;
+
+    &#hero {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      text-align: center;
+      position: relative;
+      z-index: 4;
+      opacity: 1;
+
+      h1,
+      span {
+        color: $text-primary;
+      }
+
+      span {
+        position: absolute;
+        bottom: 50px;
+      }
+    }
+
+    &#map-container {
+      display: flex;
+      position: relative;
+      opacity: 1;
+      overflow: hidden;
+
+      .map-sidebar {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 300px;
+        height: 100%;
+        background-color: $main-color;
+        color: $text-primary;
+        z-index: 9;
+        padding: 30px;
+
+        .map-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+
+          .webnorth-sidebar-logo {
+            display: block;
+
+            &.hidden {
+              display: none;
+            }
+          }
+
+          .units-switcher,
+          .bookmark-icon {
+            display: none;
+
+            &.visible {
+              display: block;
+            }
+          }
+
+          .bookmark-icon {
+            .bookmarked {
+              display: none;
+            }
+          }
+        }
+
+        .map-content {
+          margin-top: 50px;
+          .default-message {
+            font-size: 12px;
+            font-weight: 600;
+          }
+
+          .weather-content {
+            display: block;
+
+            .station-title {
+              font-size: 24px;
+              margin-bottom: 20px;
+            }
+
+            .weather-info {
+              p {
+                margin-bottom: 10px;
+                line-height: 1.4;
+              }
+            }
+          }
+
+          &.showing-bookmarks {
+            .weather-content {
+              display: none;
+            }
+
+            .bookmarked-stations {
+              display: block;
+            }
+          }
+
+          .weather-content {
+            .station-title {
+              font-size: 24px;
+              margin-bottom: 20px;
+            }
+
+            .weather-info {
+              p {
+                margin-bottom: 10px;
+                line-height: 1.4;
+              }
+            }
+          }
+        }
+
+        .bookmarked-stations {
+          display: none;
+
+          .station-accordion {
+            border-bottom: 1px solid #eee;
+
+            .station-header {
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding: 15px;
+              cursor: pointer;
+
+              h3 {
+                margin: 0;
+                font-size: 16px;
+              }
+
+              .toggle-icon {
+                font-size: 12px;
+                transition: transform 0.3s ease;
+              }
+            }
+
+            .station-content {
+              padding: 15px;
+              background: #f9f9f9;
+            }
+          }
+        }
+
+        .map-footer {
+          position: absolute;
+          bottom: 30px;
+          right: 30px;
+
+          a {
+            font-size: 12px;
+            text-decoration: none;
+            cursor: pointer;
+            color: inherit;
+
+            &:hover {
+              text-decoration: underline;
+            }
+          }
+        }
+
+        // Bookmarked stations view
+        &.showing-bookmarks {
+          .map-header {
+            .webnorth-sidebar-logo {
+              display: none;
+            }
+
+            .units-switcher,
+            .bookmark-icon {
+              display: block;
+            }
+          }
+
+          .weather-content {
+            display: none;
+          }
+
+          .bookmarked-stations {
+            display: block;
+          }
+        }
+      }
+
+      #map {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        transition: width 0.3s ease;
+        z-index: 1;
+      }
+    }
+  }
+}

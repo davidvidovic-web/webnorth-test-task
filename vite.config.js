@@ -3,15 +3,29 @@ import path from "path";
 
 export default defineConfig({
   build: {
-    outDir: "inc/Map/assets/css",
     emptyOutDir: false,
+    manifest: false,
+    write: true,
+    outDir: ".",
     rollupOptions: {
       input: {
-        main: path.resolve(__dirname, "inc/Map/assets/scss/main.scss"),
+        mapStyles: path.resolve(__dirname, "inc/Map/assets/scss/mapStyles.scss"),
+        adminStyles: path.resolve(__dirname, "assets/scss/adminStyles.scss"),
       },
       output: {
-        entryFileNames: "style.css", 
-        assetFileNames: "[name][extname]", //ensure no hash in file name ( prevent assets folder creation)
+        dir: ".",
+        entryFileNames: (chunkInfo) => {
+          if (chunkInfo.name === "mapStyles") {
+            return "inc/Map/assets/css/main.css";
+          }
+          return "assets/css/admin.css";
+        },
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name.includes("mapStyles")) {
+            return "inc/Map/assets/css/[name][extname]";
+          }
+          return "assets/css/[name][extname]";
+        },
       },
     },
   },
