@@ -27,7 +27,7 @@ body {
   position: absolute;
   top: 30px;
   left: 30px;
-  z-index: 10;
+  z-index: 4;
 }
 
 #map-app {
@@ -42,9 +42,44 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 3;
+  z-index: 2;
   background: linear-gradient(rgb(40, 39, 44) 100%, rgba(40, 39, 44, 0) 0%);
   pointer-events: none;
+}
+#map-app .loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(40, 39, 44, 0.9);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 5;
+}
+#map-app .loading-overlay.active {
+  display: flex;
+}
+#map-app .loading-overlay .spinner {
+  width: 40px;
+  height: 40px;
+  position: relative;
+}
+#map-app .loading-overlay .spinner .double-bounce1,
+#map-app .loading-overlay .spinner .double-bounce2 {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background-color: rgba(146, 145, 145, 0.8);
+  opacity: 0.6;
+  position: absolute;
+  top: 0;
+  left: 0;
+  animation: bounce 2s infinite ease-in-out;
+}
+#map-app .loading-overlay .spinner .double-bounce2 {
+  animation-delay: -1s;
 }
 #map-app > div {
   height: 100vh;
@@ -57,13 +92,12 @@ body {
   align-items: center;
   position: relative;
   text-align: center;
-  position: relative;
-  z-index: 4;
+  z-index: 3;
   opacity: 1;
 }
 #map-app > div#hero h1,
 #map-app > div#hero span {
-  color: #fff;
+  color: #eeeeee;
 }
 #map-app > div#hero span {
   position: absolute;
@@ -82,13 +116,16 @@ body {
   width: 300px;
   height: 100%;
   background-color: #28272c;
-  color: #fff;
-  z-index: 9;
+  color: #eeeeee;
+  z-index: 4;
   padding: 30px;
 }
 #map-app > div#map-container .map-sidebar .map-header {
   display: flex;
   justify-content: space-between;
+}
+#map-app > div#map-container .map-sidebar .map-header span {
+  font-size: 12px;
 }
 #map-app > div#map-container .map-sidebar .map-header .webnorth-sidebar-logo {
   display: block;
@@ -103,6 +140,14 @@ body {
 #map-app > div#map-container .map-sidebar .map-header .units-switcher.visible,
 #map-app > div#map-container .map-sidebar .map-header .bookmark-icon.visible {
   display: block;
+}
+#map-app > div#map-container .map-sidebar .map-header .units-switcher .unit-option {
+  cursor: pointer;
+  font-size: 12px;
+  color: #757575;
+}
+#map-app > div#map-container .map-sidebar .map-header .units-switcher .unit-option.active {
+  color: #eeeeee;
 }
 #map-app > div#map-container .map-sidebar .map-header .bookmark-icon {
   display: none;
@@ -134,26 +179,9 @@ body {
   display: block;
 }
 #map-app > div#map-container .map-sidebar .map-content .weather-content .station-title {
-  font-size: 24px;
-  margin-bottom: 20px;
-}
-#map-app > div#map-container .map-sidebar .map-content .weather-content .weather-info p {
-  margin-bottom: 10px;
-  line-height: 1.4;
-}
-#map-app > div#map-container .map-sidebar .map-content.showing-bookmarks .weather-content {
-  display: none;
-}
-#map-app > div#map-container .map-sidebar .map-content.showing-bookmarks .bookmarked-stations {
-  display: block;
-}
-#map-app > div#map-container .map-sidebar .map-content .weather-content .station-title {
-  font-size: 24px;
-  margin-bottom: 20px;
-}
-#map-app > div#map-container .map-sidebar .map-content .weather-content .weather-info p {
-  margin-bottom: 10px;
-  line-height: 1.4;
+  font-size: 12px;
+  margin-bottom: 30px;
+  font-weight: bold;
 }
 #map-app > div#map-container .map-sidebar .bookmarked-stations {
   display: none;
@@ -167,7 +195,7 @@ body {
 }
 #map-app > div#map-container .map-sidebar .bookmarked-stations .station-accordion .station-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: 12px;
 }
 #map-app > div#map-container .map-sidebar .bookmarked-stations .station-accordion .station-header .toggle-icon {
   font-size: 12px;
@@ -190,18 +218,31 @@ body {
 #map-app > div#map-container .map-sidebar .map-footer a:hover {
   text-decoration: underline;
 }
-#map-app > div#map-container .map-sidebar.showing-bookmarks .map-header .webnorth-sidebar-logo {
-  display: none;
-}
-#map-app > div#map-container .map-sidebar.showing-bookmarks .map-header .units-switcher,
-#map-app > div#map-container .map-sidebar.showing-bookmarks .map-header .bookmark-icon {
-  display: block;
-}
+#map-app > div#map-container .map-sidebar.showing-bookmarks .map-header,
 #map-app > div#map-container .map-sidebar.showing-bookmarks .weather-content {
   display: none;
 }
 #map-app > div#map-container .map-sidebar.showing-bookmarks .bookmarked-stations {
   display: block;
+}
+#map-app > div#map-container .map-sidebar.showing-bookmarks .map-content {
+  margin-top: 0;
+}
+#map-app > div#map-container .map-sidebar .weather-content .weather-info p,
+#map-app > div#map-container .map-sidebar .weather-content .weather-info p span,
+#map-app > div#map-container .map-sidebar .station-content .weather-info p,
+#map-app > div#map-container .map-sidebar .station-content .weather-info p span {
+  font-size: 12px;
+}
+#map-app > div#map-container .map-sidebar .weather-content .weather-info p,
+#map-app > div#map-container .map-sidebar .station-content .weather-info p {
+  margin-bottom: 10px;
+  line-height: 1.4;
+  font-weight: bold;
+}
+#map-app > div#map-container .map-sidebar .weather-content .weather-info p span,
+#map-app > div#map-container .map-sidebar .station-content .weather-info p span {
+  font-weight: normal;
 }
 #map-app > div#map-container #map {
   position: relative;
@@ -209,6 +250,15 @@ body {
   height: 100%;
   transition: width 0.3s ease;
   z-index: 1;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1);
+  }
 }
 
 /*# sourceMappingURL=mapStyles.css.map */

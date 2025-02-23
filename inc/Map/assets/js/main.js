@@ -1,6 +1,7 @@
 class MapAnimation {
   constructor() {
     this.init();
+    this.setupSidebarTransitions();
   }
 
   init() {
@@ -17,7 +18,7 @@ class MapAnimation {
     const mapContainer = mapApp.querySelector("#map-container");
     const mapSidebar = mapApp.querySelector(".map-sidebar");
 
-    // Gradient and hero animations
+    //gradient and hero
     ScrollTrigger.create({
       trigger: mapApp,
       start: "top top",
@@ -34,7 +35,7 @@ class MapAnimation {
       },
     });
 
-    // Map and sidebar animations
+    //map and sidebar
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: mapContainer,
@@ -47,15 +48,81 @@ class MapAnimation {
     tl.from(mapSidebar, {
       x: "-100%",
       opacity: 0,
-    }).to(mapContainer, {
-      paddingLeft: "300px",
-      ease: "none",
-      onUpdate: () => {
-        if (window.map) {
-          window.map.invalidateSize();
+    }).to(
+      mapContainer,
+      {
+        paddingLeft: "300px",
+        ease: "none",
+        onUpdate: () => {
+          if (window.map) {
+            window.map.invalidateSize();
+          }
+        },
+      },
+      "<"
+    );
+  }
+
+  setupSidebarTransitions() {
+    document.addEventListener("DOMContentLoaded", () => {
+      const mapSidebar = document.querySelector(".map-sidebar");
+      const mapContainer = document.querySelector("#map-container");
+      const mapFooter = document.querySelector(".map-footer");
+
+      if (!mapSidebar || !mapFooter) return;
+
+      const handleTransition = (toBookmarks) => {
+        const timeline = gsap.timeline();
+
+        timeline
+          .to(mapSidebar, {
+            width: toBookmarks ? "100%" : "300px",
+            duration: 0.3,
+            ease: "power2.out",
+          })
+          .to(
+            mapContainer,
+            {
+              paddingLeft: toBookmarks ? "100%" : "300px",
+              duration: 0.3,
+              ease: "power2.out",
+              onComplete: () => {
+                if (window.map) {
+                  window.map.invalidateSize();
+                }
+              },
+            },
+            "<"
+          );
+      };
+
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.attributeName === "class") {
+            const isShowingBookmarks =
+              mapFooter.classList.contains("showing-bookmarks");
+            handleTransition(isShowingBookmarks);
+          }
+        });
+      });
+
+      document.addEventListener("click", (e) => {
+        const stationHeader = e.target.closest(".station-header");
+        if (stationHeader) {
+          const content = stationHeader.nextElementSibling;
+          const isOpen = content.style.display === "block";
+
+          if (isOpen) {
+            handleTransition(false);
+          }
         }
-      }
-    }, "<");
+      });
+
+      observer.observe(mapFooter, {
+        attributes: true,
+        attributeFilter: ["class"],
+      });
+    });
   }
 }
 

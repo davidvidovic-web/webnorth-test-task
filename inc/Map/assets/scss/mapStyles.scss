@@ -2,7 +2,21 @@
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap");
 
 $main-color: #28272c;
-$text-primary: #fff;
+$text-primary: #eeeeee;
+$text-secondary: #757575;
+$overlay-background: rgba(40, 39, 44, 0.9);
+$spinner-color: rgba(146, 145, 145, 0.8);
+$gradient-start: rgb(40, 39, 44);
+$gradient-end: rgba(40, 39, 44, 0);
+$spacing-default: 30px;
+$sidebar-width: 300px;
+$animation-duration: 0.3s;
+$sidebar-font-size: 12px;
+$z-map: 1;
+$z-gradient: 2;
+$z-hero: 3;
+$z-sidebar: 4;
+$z-loading: 5;
 
 // resets
 * {
@@ -33,9 +47,9 @@ body {
 
 #map-header {
   position: absolute;
-  top: 30px;
-  left: 30px;
-  z-index: 10;
+  top: $spacing-default;
+  left: $spacing-default;
+  z-index: $z-sidebar;
 }
 
 #map-app {
@@ -50,9 +64,49 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 3;
-    background: linear-gradient(rgb(40, 39, 44) 100%, rgba(40, 39, 44, 0) 0%);
+    z-index: $z-gradient;
+    background: linear-gradient($gradient-start 100%, $gradient-end 0%);
     pointer-events: none;
+  }
+
+  .loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: $overlay-background;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: $z-loading;
+
+    &.active {
+      display: flex;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      position: relative;
+
+      .double-bounce1,
+      .double-bounce2 {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background-color: $spinner-color;
+        opacity: 0.6;
+        position: absolute;
+        top: 0;
+        left: 0;
+        animation: bounce 2s infinite ease-in-out;
+      }
+
+      .double-bounce2 {
+        animation-delay: -1s;
+      }
+    }
   }
 
   & > div {
@@ -66,8 +120,7 @@ body {
       align-items: center;
       position: relative;
       text-align: center;
-      position: relative;
-      z-index: 4;
+      z-index: $z-hero;
       opacity: 1;
 
       h1,
@@ -91,16 +144,20 @@ body {
         position: absolute;
         left: 0;
         top: 0;
-        width: 300px;
+        width: $sidebar-width;
         height: 100%;
         background-color: $main-color;
         color: $text-primary;
-        z-index: 9;
-        padding: 30px;
+        z-index: $z-sidebar;
+        padding: $spacing-default;
 
         .map-header {
           display: flex;
           justify-content: space-between;
+
+          span {
+            font-size: $sidebar-font-size;
+          }
 
           .webnorth-sidebar-logo {
             display: block;
@@ -116,6 +173,17 @@ body {
 
             &.visible {
               display: block;
+            }
+          }
+
+          .units-switcher {
+            .unit-option {
+              cursor: pointer;
+              font-size: $sidebar-font-size;
+              color: $text-secondary;
+              &.active {
+                color: $text-primary;
+              }
             }
           }
 
@@ -150,7 +218,7 @@ body {
         .map-content {
           margin-top: 50px;
           .default-message {
-            font-size: 12px;
+            font-size: $sidebar-font-size;
             font-weight: 600;
           }
 
@@ -158,39 +226,9 @@ body {
             display: block;
 
             .station-title {
-              font-size: 24px;
-              margin-bottom: 20px;
-            }
-
-            .weather-info {
-              p {
-                margin-bottom: 10px;
-                line-height: 1.4;
-              }
-            }
-          }
-
-          &.showing-bookmarks {
-            .weather-content {
-              display: none;
-            }
-
-            .bookmarked-stations {
-              display: block;
-            }
-          }
-
-          .weather-content {
-            .station-title {
-              font-size: 24px;
-              margin-bottom: 20px;
-            }
-
-            .weather-info {
-              p {
-                margin-bottom: 10px;
-                line-height: 1.4;
-              }
+              font-size: $sidebar-font-size;
+              margin-bottom: 30px;
+              font-weight: bold;
             }
           }
         }
@@ -208,11 +246,11 @@ body {
 
               h3 {
                 margin: 0;
-                font-size: 16px;
+                font-size: $sidebar-font-size;
               }
 
               .toggle-icon {
-                font-size: 12px;
+                font-size: $sidebar-font-size;
                 transition: transform 0.3s ease;
               }
             }
@@ -229,7 +267,7 @@ body {
           right: 30px;
 
           a {
-            font-size: 12px;
+            font-size: $sidebar-font-size;
             text-decoration: none;
             cursor: pointer;
             color: inherit;
@@ -240,25 +278,37 @@ body {
           }
         }
 
-        // Bookmarked stations view
         &.showing-bookmarks {
-          .map-header {
-            .webnorth-sidebar-logo {
-              display: none;
-            }
-
-            .units-switcher,
-            .bookmark-icon {
-              display: block;
-            }
-          }
-
+          .map-header,
           .weather-content {
             display: none;
           }
 
           .bookmarked-stations {
             display: block;
+          }
+
+          .map-content {
+            margin-top: 0;
+          }
+        }
+
+        .weather-content,
+        .station-content {
+          .weather-info {
+            p,
+            p span {
+              font-size: $sidebar-font-size;
+            }
+
+            p {
+              margin-bottom: 10px;
+              line-height: 1.4;
+              font-weight: bold;
+              span {
+                font-weight: normal;
+              }
+            }
           }
         }
       }
@@ -267,9 +317,19 @@ body {
         position: relative;
         width: 100%;
         height: 100%;
-        transition: width 0.3s ease;
-        z-index: 1;
+        transition: width $animation-duration ease;
+        z-index: $z-map;
       }
     }
+  }
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1);
   }
 }

@@ -6,12 +6,11 @@ class MapInitializer {
 
     this.initialCenter = fallbackCenter;
     this.initialZoom = fallbackZoom;
-
     this.map = null;
     this.markers = new Map();
     this.activeStation = null;
     this.userInitiated = false;
-    this.currentUnit = "metric"; // Default to Celsius
+    this.currentUnit = "metric";
 
     // image path for markers, check if data exists first otherwise returns undefined
     if (typeof weatherStationData !== "undefined") {
@@ -26,6 +25,36 @@ class MapInitializer {
     this.bookmarkedStations = this.loadBookmarkedStations();
     this.setupMyLocationsHandler();
     this.setupBookmarkHandler();
+    this.createLoadingOverlay();
+  }
+
+  createLoadingOverlay() {
+    const mapSidebar = document.querySelector(".map-sidebar");
+    if (!mapSidebar) return;
+
+    const loadingOverlay = document.createElement("div");
+    loadingOverlay.className = "loading-overlay";
+    loadingOverlay.innerHTML = `
+        <div class="spinner">
+            <div class="double-bounce1"></div>
+            <div class="double-bounce2"></div>
+        </div>
+    `;
+    mapSidebar.appendChild(loadingOverlay);
+  }
+
+  showLoading() {
+    const loadingOverlay = document.querySelector(".loading-overlay");
+    if (loadingOverlay) {
+      loadingOverlay.classList.add("active");
+    }
+  }
+
+  hideLoading() {
+    const loadingOverlay = document.querySelector(".loading-overlay");
+    if (loadingOverlay) {
+      loadingOverlay.classList.remove("active");
+    }
   }
 
   init() {
@@ -51,15 +80,12 @@ class MapInitializer {
       this.addTileLayer();
       this.handleUrlHash();
 
-      // add stations if data exists
       if (typeof weatherStationData !== "undefined") {
         this.addWeatherStations();
       }
 
       this.setupMapReadyHandler();
       this.map.on("click", (e) => this.handleMapClick(e));
-
-      // url history
       this.setupUrlHandling();
     } catch (error) {
       console.error("Error initializing map:", error);
@@ -95,11 +121,7 @@ class MapInitializer {
 
       this.activeStation = station.id;
       this.userInitiated = false;
-
-      // Update header visibility
       this.updateMapHeader(station);
-
-      // Fetch weather data if needed
       this.checkAndFetchWeatherData(station);
     }
   }
@@ -189,6 +211,8 @@ class MapInitializer {
   }
 
   fetchWeatherData(station) {
+    this.showLoading();
+
     if (!weatherStationData?.ajax_url || !weatherStationData?.nonce) {
       console.error("Missing AJAX configuration");
       return;
@@ -231,17 +255,17 @@ class MapInitializer {
         const source = response.data.source;
         console.log(
           `%cData source: ${source}`,
-          `color: ${source === "cache" ? "green" : "blue"}; font-weight: bold`
+          `color: ${source === "cache" ? "green" : "white"}; font-weight: bold`
         );
 
         station.weather_data = JSON.stringify(response.data.data);
-
-        // TODO: Update UI with weather data
         this.updateWeatherContent(station, response.data.data);
+        this.hideLoading();
         return response.data;
       })
       .catch((error) => {
         console.error("Error:", error.message);
+        this.hideLoading();
       });
   }
 
@@ -277,23 +301,20 @@ class MapInitializer {
     const unitsSwitcher = mapHeader.querySelector(".units-switcher");
     const bookmarkIcon = mapHeader.querySelector(".bookmark-icon");
 
-    // Toggle visibility
     logo.classList.add("hidden");
     unitsSwitcher.classList.add("visible");
     bookmarkIcon.classList.add("visible");
 
-    // Add unit switching handlers
     const celsiusOption = unitsSwitcher.querySelector(".unit-celsius");
     const fahrenheitOption = unitsSwitcher.querySelector(".unit-fahrenheit");
 
     celsiusOption?.addEventListener("click", () => {
-      if (this.currentUnit === "metric") return; // Already active
+      if (this.currentUnit === "metric") return;
 
       this.currentUnit = "metric";
       celsiusOption.classList.add("active");
       fahrenheitOption?.classList.remove("active");
 
-      // Update weather display if we have an active station
       if (this.activeStation) {
         const station = window.weatherStationData?.stations?.find(
           (s) => s.id === this.activeStation
@@ -306,13 +327,12 @@ class MapInitializer {
     });
 
     fahrenheitOption?.addEventListener("click", () => {
-      if (this.currentUnit === "imperial") return; // Already active
+      if (this.currentUnit === "imperial") return;
 
       this.currentUnit = "imperial";
       fahrenheitOption.classList.add("active");
       celsiusOption?.classList.remove("active");
 
-      // Update weather display if we have an active station
       if (this.activeStation) {
         const station = window.weatherStationData?.stations?.find(
           (s) => s.id === this.activeStation
@@ -324,7 +344,6 @@ class MapInitializer {
       }
     });
 
-    // Update bookmark icon state
     if (bookmarkIcon) {
       const isBookmarked = this.bookmarkedStations.some(
         (s) => s.id === station.id
@@ -337,18 +356,15 @@ class MapInitializer {
     const mapContent = document.querySelector(".map-content");
     if (!mapContent) return;
 
-    // Remove default message if exists
     const defaultMessage = mapContent.querySelector(".default-message");
     if (defaultMessage) {
       defaultMessage.remove();
     }
 
-    // Use passed unit or fall back to current unit
     const displayUnit = unit || this.currentUnit;
     const unitSymbol = displayUnit === "metric" ? "°C" : "°F";
     const temps = weatherData[displayUnit];
 
-    // Create or update weather content
     let weatherContent = mapContent.querySelector(".weather-content");
     if (!weatherContent) {
       weatherContent = document.createElement("div");
@@ -377,17 +393,19 @@ class MapInitializer {
 
   toggleMyLocations() {
     const mapSidebar = document.querySelector(".map-sidebar");
+    const mapFooter = document.querySelector(".map-footer");
     const myLocationsLink = document.querySelector(".map-footer a");
 
     if (myLocationsLink.textContent === "My locations") {
       myLocationsLink.textContent = "Close";
       mapSidebar.classList.add("showing-bookmarks");
+      mapFooter.classList.add("showing-bookmarks");
       this.showBookmarkedStations();
     } else {
       myLocationsLink.textContent = "My locations";
       mapSidebar.classList.remove("showing-bookmarks");
+      mapFooter.classList.remove("showing-bookmarks");
 
-      // Get the active station from weatherStationData
       if (this.activeStation) {
         const station = window.weatherStationData?.stations?.find(
           (s) => s.id === this.activeStation
@@ -429,7 +447,6 @@ class MapInitializer {
       </div>
     `;
 
-    // Add click handlers for accordions
     const accordions = mapContent.querySelectorAll(".station-accordion");
     accordions.forEach((accordion) => {
       const header = accordion.querySelector(".station-header");
@@ -439,33 +456,33 @@ class MapInitializer {
       header.addEventListener("click", () => {
         const station = this.bookmarkedStations.find((s) => s.id === stationId);
         if (station) {
-          // Center map on station
           this.map.setView([station.lat, station.lon], 12, {
             animate: true,
           });
 
-          // Set active station
           this.activeStation = station.id;
 
-          // Check if accordion is open
+          const globalStation = window.weatherStationData?.stations?.find(
+            (s) => s.id === station.id
+          );
+          if (globalStation) {
+            globalStation.weather_data = station.weather_data;
+          }
+
           const isOpen = content.style.display === "block";
 
-          // Close all other accordions
           accordions.forEach((acc) => {
             if (acc !== accordion) {
               acc.querySelector(".station-content").style.display = "none";
             }
           });
 
-          // Toggle clicked accordion
           content.style.display = isOpen ? "none" : "block";
 
-          // Only switch to single view if closing the accordion
           if (isOpen) {
             const myLocationsLink = document.querySelector(".map-footer a");
             myLocationsLink.click();
 
-            // Update URL
             const path = window.location.pathname.replace(/\/+$/, "");
             window.history.pushState(null, "", `${path}#${station.id}`);
           }
@@ -507,13 +524,11 @@ class MapInitializer {
       );
 
       if (isBookmarked) {
-        // Remove from bookmarks
         this.bookmarkedStations = this.bookmarkedStations.filter(
           (s) => s.id !== station.id
         );
         bookmarkIcon.classList.remove("active");
       } else {
-        // Add to bookmarks
         this.bookmarkedStations.push({
           id: station.id,
           title: station.title,
@@ -524,7 +539,6 @@ class MapInitializer {
         bookmarkIcon.classList.add("active");
       }
 
-      // Save to localStorage
       localStorage.setItem(
         "bookmarkedStations",
         JSON.stringify(this.bookmarkedStations)

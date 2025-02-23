@@ -108,7 +108,6 @@ class Client_Map_Data_Handler
             ]
         ];
 
-        // Store cache timestamp
         $cache_timestamp = current_time('timestamp');
         set_transient($transient_key, $weather_data, 24 * HOUR_IN_SECONDS);
         update_post_meta($post_id, 'weather_data_cached_at', $cache_timestamp);
